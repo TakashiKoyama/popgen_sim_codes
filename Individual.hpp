@@ -2,19 +2,28 @@
 #ifndef INDIVIDUAL_HPP
 #define INDIVIDUAL_HPP
 
+#include <vector>
+
 class Individual{
 private:
   int id;
   bool gt;
-  double s;
+  std::vector<bool> alleles;
+  //double s;
   //std::vector alleles;
 public:
-  //Constructor
-  Individual(const int id_input, const bool gt_input) : id(id_input), gt(gt_input) {}//Constructor
+  // Constructor
+  Individual( const int id_input,
+              const int numOfLoci_input,
+              const bool allele_input);
   //Function
   //getter
-  const int getID(){ return id; }//get id from individual
-  const bool getGT(){ return gt; }
-  };
+  int getID(){ return id; }//get id from individual object
+  bool getGT(){ return gt; }
+  const std::vector<bool> getAlleles(){ return alleles; }// get allele vector from individual object
+  //setter
+  void toggleAlleles(const int locus_input){ alleles.at(locus_input) = !alleles.at(locus_input); }
+  void replaceAlleles(const std::vector<bool> alleles_input){ alleles = alleles_input; }
+};
 
 #endif
