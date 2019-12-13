@@ -30,7 +30,7 @@ public:
   //Functions
   //std::vector<int> getIndividualID();
   std::vector<int> getIndividualGT();
-  void getSamples(std::vector<Individual>& samples_out);
+  std::vector<Individual> getSamples(unsigned int sampleSize_in);
   void printIndividualAlleles();
   void setMutations();
   void setRecombinations();
@@ -38,9 +38,6 @@ public:
   void iterateToFix(const double maFitness_input,
                     int& generationToFix_out,
                     bool& fixedAllele_out);
-  std::vector<double> getMAFs();
-  double getHeterozygosity();
-  void getStatistics(const int samples_in, double& pi_out, int& s_out);
 };
 
 #endif

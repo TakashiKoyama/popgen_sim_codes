@@ -44,14 +44,16 @@ std::vector<int> Population::getIndividualGT(){
   return id_vector;
 }
 
-void Population::getSamples(std::vector<Individual>& samples_out){
-  for (unsigned int i = 0; i < samples_out.size(); ++i){
+std::vector<Individual> Population::getSamples(unsigned int sampleSize_in){
+  std::vector<Individual> samples_out;
+  samples_out.reserve(sampleSize_in);
+  for (unsigned int i = 0; i < sampleSize_in; ++i){
     samples_out.push_back(individuals.at(uniformDist_ind(mt)));
   }
+  return samples_out;
 }
 
 void Population::printIndividualAlleles(){
-  //std::vector<Individual> individuals_ref = getIndividuals();
   for (auto individualobj : individuals){
     std::vector<bool> alleles = individualobj.getAlleles();
     for (auto allele : alleles){
@@ -153,60 +155,4 @@ void Population::iterateToFix(const double maFitness_input,
     }
     else nextGeneration(maFitness_input);
   }
-}
-
-std::vector<double> Population::getMAFs(){
-  std::vector<unsigned int> alleleCounts(loci);
-  std::vector<double> mafs_out(loci);
-  //get minor allele count at each locus
-  for (int i = 0; i < popSize; ++i){
-    for (int j = 0; j < loci; ++j){
-      alleleCounts.at(j) += individuals.at(i).getAlleles().at(j);
-    }
-  }
-  //calculate allele frequency at each locus
-  for (unsigned int i = 0; i < alleleCounts.size(); ++i){
-    mafs_out.at(i) = (alleleCounts.at(i)*1.0)/popSize;
-  }
-  return mafs_out;
-}
-
-double Population::getHeterozygosity(){
-  double heterozygosity_sum = 0.0;
-  std::vector<double> mafs = getMAFs();
-  for (auto maf : mafs){
-    double heterozygosity = 2 * maf * (1 - maf);
-    heterozygosity_sum += heterozygosity;
-  }
-  return heterozygosity_sum/loci;
-}
-
-void Population::getStatistics(const int samples_in, double& pi_out, int& s_out){
-  //pickup samples for calculations from the population
-  std::vector<Individual> samples_vec;
-  samples_vec.reserve(samples_in);
-  for (int i = 0; i < samples_in; ++i){
-    samples_vec.push_back(individuals.at(uniformDist_ind(mt)));
-  }
-  //calculate pi and s
-  int k = 0;//total number of differences
-  pi_out = 0;
-  s_out = 0;
-  std::vector<bool> s_vec(loci);
-  int nC2 = samples_in * (samples_in - 1) / 2;
-
-  for (unsigned int i = 0; i < (samples_vec.size() - 1); ++i){
-    for (unsigned int j = i + 1; j < samples_vec.size(); ++j){
-      for (int m = 0; m < loci; ++m){
-        if (samples_vec.at(i).getAlleles().at(m) != samples_vec.at(j).getAlleles().at(m)){
-          ++k;
-          s_vec.at(m) = 1;
-        }
-      }
-    }
-  }
-  //calculate haplotype frequencies
-
-  pi_out = (k * 1.0) / nC2;
-  for (auto s : s_vec) s_out += s;
 }

@@ -3,6 +3,7 @@
 #include <fstream>
 #include "Individual.hpp"
 #include "Population.hpp"
+#include "Samples.hpp"
 //using namespace std;
 
 int main(){
@@ -13,7 +14,7 @@ int main(){
   double r = 0.0;//recombination rate(/site/generation)
   double fitness = 1.00;//minor allele fitness
   int trial = 1000;//number of trials
-  int samples = 10;
+  int numOfSamples = 10;
   //double H_sum = 0;
   std::ofstream outfile("out.txt", std::ios_base::app);
   outfile << "Pop size: " << n
@@ -26,16 +27,16 @@ int main(){
   outfile << "Generation (*2n)\tHeterozygosity\tSegregatingSites\tPi" << std::endl;
   Population population(n, loci, p, mu, r);
   //std::cout << "1st generation" << std::endl;
-  //population.printIndividualAlleles();
   for (int i = 1; i <= (2 * n * trial); ++i){
-    population.nextGeneration(1.0);
+    population.nextGeneration(fitness);
     //get heterozygosity at each 2n generations
     if (i % (2 * n) == 0){
-      double H = population.getHeterozygosity();
+      Samples samples(numOfSamples, population);
+      double H = samples.getHeterozygosity();
       double pi;
       int s;
       //double r2;
-      population.getStatistics(samples, pi, s);
+      samples.getPiAndS(pi, s);
       //H_sum += H;
       outfile << i/(2 * n) << "\t" << H << "\t" << s << "\t" << pi << "\n";
     }
