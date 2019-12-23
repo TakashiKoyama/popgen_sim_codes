@@ -10,6 +10,7 @@ private:
   std::vector<std::vector<bool>> sampleSegAlleles;
   unsigned int sampleSize;
   unsigned int numOfSegSites;
+  std::vector<double> segSites_positions;
 
 public:
   //Constructor

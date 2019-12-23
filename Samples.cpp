@@ -21,6 +21,12 @@ Samples::Samples(const int sampleSize_in, Population pop_in){
   numOfSegSites = 0;
   for (auto segSite : segSites_vec) numOfSegSites += segSite;
 
+  //record positions of the polymorphic sites
+  segSites_positions.reserve(numOfSegSites);
+  for (unsigned int i = 0; i < segSites_vec.size(); ++i){
+    if(segSites_vec.at(i)) segSites_positions.push_back((i*1.0)/segSites_vec.size());
+  }
+
   //pickup polymorphic loci
   if (numOfSegSites > 0){//check polymorphism
     sampleSegAlleles.reserve(sampleSize);
@@ -40,10 +46,13 @@ Samples::Samples(const int sampleSize_in, Population pop_in){
 //Functions
 void Samples::printIndividualAlleles(){
   if (numOfSegSites > 0){
-    //for (auto sampleobj : samples){
+    //print positions
+    for (auto pos : segSites_positions){
+      std::cout << pos << ", ";
+    }
+    std::cout << std::endl;
+    //print alleles
     for (auto segAlleles : sampleSegAlleles){
-      //std::vector<bool> alleles = sampleobj.getAlleles();
-      //for (auto allele : alleles){
       for (auto segAllele : segAlleles) std::cout << segAllele;
       std::cout << ", ";
     }
