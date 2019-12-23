@@ -4,7 +4,6 @@
 #include "Individual.hpp"
 #include "Population.hpp"
 #include "Samples.hpp"
-//using namespace std;
 
 int main(){
   int n = 1000;//population size
@@ -15,7 +14,6 @@ int main(){
   double fitness = 1.00;//minor allele fitness
   int trial = 1000;//number of trials
   int numOfSamples = 10;
-  //double H_sum = 0;
   std::ofstream outfile("out.txt", std::ios_base::app);
   outfile << "Pop size: " << n
   << ", Number of loci: " << loci
@@ -26,22 +24,19 @@ int main(){
   << ", Number of E(H) calculations: " << trial << "\n";
   outfile << "Generation (*2n)\tHeterozygosity\tSegregatingSites\tPi" << std::endl;
   Population population(n, loci, p, mu, r);
-  //std::cout << "1st generation" << std::endl;
   for (int i = 1; i <= (2 * n * trial); ++i){
     population.nextGeneration(fitness);
     //get heterozygosity at each 2n generations
     if (i % (2 * n) == 0){
       Samples samples(numOfSamples, population);
-      double H = samples.getHeterozygosity();
-      double pi;
-      int s;
+      samples.printIndividualAlleles();
+      double h = samples.getHeterozygosity();
+      double pi = samples.getPi();
+      unsigned int s = samples.getS();
       //double r2;
-      samples.getPiAndS(pi, s);
-      //H_sum += H;
-      outfile << i/(2 * n) << "\t" << H << "\t" << s << "\t" << pi << "\n";
+      outfile << i/(2 * n) << "\t" << h << "\t" << s << "\t" << pi << "\n";
     }
   }
-  //outfile << "Average heterozygosity: " << H_sum/trial << std::endl;
   outfile.close();
 
   //std::cout << "10th generation" << std::endl;

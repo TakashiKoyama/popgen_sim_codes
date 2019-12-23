@@ -6,28 +6,60 @@
 Samples::Samples(const int sampleSize_in, Population pop_in){
   sampleSize = sampleSize_in;
   samples = pop_in.getSamples(sampleSize);
-  loci = samples.at(0).getAlleles().size();
+  int loci = samples.at(0).getAlleles().size();
+  //anotate polymorphic loci
+  std::vector<bool> segSites_vec(loci);
+  for (unsigned int i = 0; i < (samples.size() - 1); ++i){
+    for (unsigned int j = i + 1; j < samples.size(); ++j){
+      for (int m = 0; m < loci; ++m){
+        if (samples.at(i).getAlleles().at(m) != samples.at(j).getAlleles().at(m)){
+          segSites_vec.at(m) = 1;
+        }
+      }
+    }
+  }
+  numOfSegSites = 0;
+  for (auto segSite : segSites_vec) numOfSegSites += segSite;
+
+  //pickup polymorphic loci
+  if (numOfSegSites > 0){//check polymorphism
+    sampleSegAlleles.reserve(sampleSize);
+    for (unsigned int i = 0; i < samples.size(); ++i){
+      std::vector<bool> segAlleles;
+      segAlleles.reserve(numOfSegSites);
+      for (unsigned int j = 0; j < segSites_vec.size(); ++j){
+        if (segSites_vec.at(j)) segAlleles.push_back(samples.at(i).getAlleles().at(j));
+      }
+      sampleSegAlleles.push_back(segAlleles);
+    }
+  } //else{
+    //throw std::runtime_error("no polymorphic site in samples");
+  //}
 }
 
 //Functions
 void Samples::printIndividualAlleles(){
-  for (auto sampleobj : samples){
-    std::vector<bool> alleles = sampleobj.getAlleles();
-    for (auto allele : alleles){
-      std::cout << allele;
+  if (numOfSegSites > 0){
+    //for (auto sampleobj : samples){
+    for (auto segAlleles : sampleSegAlleles){
+      //std::vector<bool> alleles = sampleobj.getAlleles();
+      //for (auto allele : alleles){
+      for (auto segAllele : segAlleles) std::cout << segAllele;
+      std::cout << ", ";
     }
-    std::cout << ", ";
+    std::cout << std::endl;
+  } else{
+    std::cout << "no polymorphic site in samples" << std::endl;
   }
-  std::cout << std::endl;
 }
 
 std::vector<double> Samples::getMAFs(){
-  std::vector<unsigned int> alleleCounts(loci);
-  std::vector<double> mafs_out(loci);
+  std::vector<unsigned int> alleleCounts(numOfSegSites);
+  std::vector<double> mafs_out(numOfSegSites);
   //get minor allele count at each locus
-  for (int i = 0; i < sampleSize; ++i){
-    for (int j = 0; j < loci; ++j){
-      alleleCounts.at(j) += samples.at(i).getAlleles().at(j);
+  for (unsigned int i = 0; i < sampleSize; ++i){
+    for (unsigned int j = 0; j < numOfSegSites; ++j){
+      alleleCounts.at(j) += sampleSegAlleles.at(i).at(j);
     }
   }
   //calculate allele frequency at each locus
@@ -39,31 +71,33 @@ std::vector<double> Samples::getMAFs(){
 
 double Samples::getHeterozygosity(){
   double heterozygosity_sum = 0.0;
-  std::vector<double> mafs = getMAFs();
-  for (auto maf : mafs){
-    double heterozygosity = 2 * maf * (1 - maf);
-    heterozygosity_sum += heterozygosity;
+  if (numOfSegSites > 0){
+    std::vector<double> mafs = getMAFs();
+    for (auto maf : mafs){
+      double heterozygosity = 2 * maf * (1 - maf);
+      heterozygosity_sum += heterozygosity;
+    }
+    return heterozygosity_sum/numOfSegSites;
+  } else{
+    return heterozygosity_sum;
   }
-  return heterozygosity_sum/loci;
 }
 
-void Samples::getPiAndS(double& pi_out, int& s_out){
+unsigned int Samples::getS(){ return numOfSegSites; }
+
+double Samples::getPi(){
   int k = 0;//total number of differences
-  pi_out = 0;
-  s_out = 0;
-  std::vector<bool> s_vec(loci);
+  double pi_out = 0;
   int nC2 = sampleSize * (sampleSize - 1) / 2;
 
-  for (unsigned int i = 0; i < (samples.size() - 1); ++i){
-    for (unsigned int j = i + 1; j < samples.size(); ++j){
-      for (int m = 0; m < loci; ++m){
-        if (samples.at(i).getAlleles().at(m) != samples.at(j).getAlleles().at(m)){
-          ++k;
-          s_vec.at(m) = 1;
+  if (numOfSegSites > 0){
+    for (unsigned int i = 0; i < (sampleSegAlleles.size() - 1); ++i){
+      for (unsigned int j = i + 1; j < sampleSegAlleles.size(); ++j){
+        for (unsigned int m = 0; m < numOfSegSites; ++m){
+          if (sampleSegAlleles.at(i).at(m) != sampleSegAlleles.at(j).at(m)) ++k;
         }
       }
     }
   }
-  pi_out = (k * 1.0) / nC2;
-  for (auto s : s_vec) s_out += s;
+  return pi_out = (k * 1.0) / nC2;
 }

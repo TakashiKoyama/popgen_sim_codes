@@ -7,16 +7,19 @@
 class Samples{
 private:
   std::vector<Individual> samples;
-  int sampleSize;
-  int loci;
+  std::vector<std::vector<bool>> sampleSegAlleles;
+  unsigned int sampleSize;
+  unsigned int numOfSegSites;
 
 public:
   //Constructor
+  Samples(){}
   Samples(const int sampleSize, const Population pop_in);
   //Functions
   void printIndividualAlleles();
   std::vector<double> getMAFs();
   double getHeterozygosity();
-  void getPiAndS(double& pi_out, int& s_out);
+  unsigned int getS();
+  double getPi();
 };
 #endif
