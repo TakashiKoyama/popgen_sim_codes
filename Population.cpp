@@ -27,7 +27,7 @@ Population::Population( const int popSize_input,
   std::uniform_int_distribution<unsigned> uniformDist_ind_gen(0, popSize - 1);
   uniformDist_ind = uniformDist_ind_gen;
   lambda_mu = mu_input * loci * popSize;
-  lambda_rho = r_input * loci * popSize;
+  lambda_rho = r_input * loci * popSize / 2;
 }
 
 //Function
