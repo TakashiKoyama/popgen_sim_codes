@@ -22,9 +22,9 @@ Samples::Samples(const int sampleSize_in, Population pop_in){
   for (auto segSite : segSites_vec) numOfSegSites += segSite;
 
   //record positions of the polymorphic sites
-  segSites_positions.reserve(numOfSegSites);
+  segSite_positions.reserve(numOfSegSites);
   for (unsigned int i = 0; i < segSites_vec.size(); ++i){
-    if(segSites_vec.at(i)) segSites_positions.push_back((i*1.0)/segSites_vec.size());
+    if(segSites_vec.at(i)) segSite_positions.push_back(i);
   }
 
   //pickup polymorphic loci
@@ -47,18 +47,16 @@ Samples::Samples(const int sampleSize_in, Population pop_in){
 void Samples::printIndividualAlleles(){
   if (numOfSegSites > 0){
     //print positions
-    for (auto pos : segSites_positions){
-      std::cout << pos << ", ";
+    std::cout << "positions:";
+    for (auto pos : segSite_positions){
+      std::cout << " " << pos;
     }
     std::cout << std::endl;
     //print alleles
     for (auto segAlleles : sampleSegAlleles){
       for (auto segAllele : segAlleles) std::cout << segAllele;
-      std::cout << ", ";
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
-  } else{
-    std::cout << "no polymorphic site in samples" << std::endl;
   }
 }
 
@@ -87,7 +85,7 @@ double Samples::getHeterozygosity(){
       heterozygosity_sum += heterozygosity;
     }
     return heterozygosity_sum/numOfSegSites;
-  } else{
+  } else{//when no polymorphic site
     return heterozygosity_sum;
   }
 }
@@ -109,4 +107,47 @@ double Samples::getPi(){
     }
   }
   return pi_out = (k * 1.0) / nC2;
+}
+
+std::vector<std::vector<double>> Samples::getHFs(){
+  std::vector<std::vector<double>> hf_vec;
+  //calculate haplotype frequency
+  hf_vec.reserve(numOfSegSites - 1);
+  for (unsigned int i = 0; i < (numOfSegSites - 1); ++i){
+    std::vector<double> hfs_tmp;
+    hfs_tmp.reserve(numOfSegSites - 1 - i);
+    for (unsigned int j = i + 1; j < numOfSegSites; ++j){
+      unsigned int nAB = 0; //haplotype count of derived-derived
+      for (unsigned int n = 0; n < sampleSegAlleles.size(); ++n){
+        //count haplotypes
+        if (sampleSegAlleles.at(n).at(i) && sampleSegAlleles.at(n).at(j)) ++nAB;
+      }
+      hfs_tmp.push_back((nAB*1.0)/sampleSize);
+    }
+    hf_vec.push_back(hfs_tmp);
+  }
+  return hf_vec;
+}
+
+std::map<int, double> Samples::getLD(){
+  std::map<int, double> r2Table_out;//key is length, value is average r2
+  if (numOfSegSites > 1){
+    std::unordered_map<unsigned int, unsigned int> redundancy;
+    std::vector<double> mafs = getMAFs();
+    std::vector<std::vector<double>> hfs = getHFs();
+    for (unsigned int i = 0; i < (numOfSegSites - 1); ++i){//first locus
+      for (unsigned int j = i + 1; j < numOfSegSites; ++j){//second locus
+        unsigned int interval = fabs(segSite_positions.at(j) - segSite_positions.at(i));
+        double r2 = std::pow((hfs.at(i).at(j - (i + 1)) - mafs.at(i) * mafs.at(j)), 2.0)/(mafs.at(i) * (1 - mafs.at(i)) * mafs.at(j) * (1 - mafs.at(j)));
+        r2Table_out[interval] += r2;
+        ++redundancy[interval];
+      }
+    }
+    for (auto i_ptr = r2Table_out.begin(); i_ptr != r2Table_out.end(); ++i_ptr){
+      r2Table_out.at(i_ptr->first) = r2Table_out.at(i_ptr->first)/(redundancy.at(i_ptr->first) * 1.0);
+    }
+  } else{//when 0 or 1 polymorphic site
+    r2Table_out[-1] = -1.0;
+  }
+  return r2Table_out;
 }

@@ -3,6 +3,9 @@
 #define SAMPLES_HPP
 
 #include "Population.hpp"
+#include <cmath>
+#include <map>
+#include <unordered_map>
 
 class Samples{
 private:
@@ -10,7 +13,7 @@ private:
   std::vector<std::vector<bool>> sampleSegAlleles;
   unsigned int sampleSize;
   unsigned int numOfSegSites;
-  std::vector<double> segSites_positions;
+  std::vector<double> segSite_positions;
 
 public:
   //Constructor
@@ -22,5 +25,7 @@ public:
   double getHeterozygosity();
   unsigned int getS();
   double getPi();
+  std::vector<std::vector<double>> getHFs();
+  std::map<int, double> getLD();
 };
 #endif
