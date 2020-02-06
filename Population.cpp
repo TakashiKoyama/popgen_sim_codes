@@ -115,9 +115,10 @@ void Population::nextGeneration(const double maFitness_input){
     else fitness.push_back(1.0);
   }
   //pickup individuals with selection
-  std::discrete_distribution<std::size_t> dist(fitness.begin(), fitness.end());
+  std::discrete_distribution<std::size_t> discreteDist_ind(fitness.begin(), fitness.end());
   for (int i = 0; i < popSize; ++i){
-    pop_out.push_back(individuals.at(uniformDist_ind(mt)));
+    std::size_t ind = discreteDist_ind(mt);
+    pop_out.push_back(individuals.at(ind));
   }
   individuals = pop_out;
   //set mutations and recombinations on next generation
