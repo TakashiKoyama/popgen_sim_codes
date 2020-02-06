@@ -29,8 +29,8 @@ int main(){
   outfile_summary << "Generation (*2n)\tHeterozygosity\tSegregatingSites\tPi" << std::endl;
   //set objects
   Population population(n, loci, p, mu, r);
-  std::map<int, double> r2Table;
-  std::map<int, unsigned int> r2Redundancy;
+  std::map<unsigned int, double> r2Table;
+  std::map<unsigned int, unsigned long> r2Redundancy;
   for (int i = 1; i <= (2 * n * sampling); ++i){
     population.nextGeneration(fitness);
     //get summary statistics at each 2n generations
@@ -42,14 +42,15 @@ int main(){
       outfile_summary << i/(2 * n) << "\t" << h << "\t" << s << "\t" << pi << std::endl;
       std::cout << "//\nsegsites: " << s << "\n";
       samples.printIndividualAlleles();
-      std::map<int, double> r2Table_tmp = samples.getLD();
+      //std::map<int, double> r2Table_tmp = samples.getLD();
+      samples.getLD(r2Table, r2Redundancy);
       //sum up each sample R2 table
-      for (auto i_ptr = r2Table_tmp.begin(); i_ptr != r2Table_tmp.end(); ++i_ptr){
-        if(r2Table_tmp.at(i_ptr->first) != -1){
+      /*for (auto i_ptr = r2Table_tmp.begin(); i_ptr != r2Table_tmp.end(); ++i_ptr){
+        if(i_ptr->first != -1){
           r2Table[i_ptr->first] += r2Table_tmp.at(i_ptr->first);
           ++r2Redundancy[i_ptr->first];
         }
-      }
+      }*/
     }
   }
   //out average R2

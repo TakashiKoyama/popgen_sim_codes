@@ -13,7 +13,7 @@ private:
   std::vector<std::vector<bool>> sampleSegAlleles;
   unsigned int sampleSize;
   unsigned int numOfSegSites;
-  std::vector<double> segSite_positions;
+  std::vector<unsigned int> segSite_positions;
 
 public:
   //Constructor
@@ -26,6 +26,7 @@ public:
   unsigned int getS();
   double getPi();
   std::vector<std::vector<double>> getHFs();
-  std::map<int, double> getLD();
+  //std::map<int, double> getLD();
+  void getLD(std::map<unsigned int, double>& r2Table, std::map<unsigned int, unsigned long>& r2Redundancy);
 };
 #endif

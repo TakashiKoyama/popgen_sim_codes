@@ -110,44 +110,52 @@ double Samples::getPi(){
 }
 
 std::vector<std::vector<double>> Samples::getHFs(){
-  std::vector<std::vector<double>> hf_vec;
+  std::vector<std::vector<double>> DDhf_vec; //vector of derived-derived haplotype frequencies
+  std::vector<double> mafs = getMAFs(); //use to check haplotype frequency calculation
   //calculate haplotype frequency
-  hf_vec.reserve(numOfSegSites - 1);
+  DDhf_vec.reserve(numOfSegSites - 1);
   for (unsigned int i = 0; i < (numOfSegSites - 1); ++i){
-    std::vector<double> hfs_tmp;
-    hfs_tmp.reserve(numOfSegSites - 1 - i);
+    std::vector<double> DDhfs_tmp;
+    DDhfs_tmp.reserve(numOfSegSites - 1 - i);
     for (unsigned int j = i + 1; j < numOfSegSites; ++j){
-      unsigned int nAB = 0; //haplotype count of derived-derived
+      unsigned int nDD = 0; //haplotype count of derived-derived
+      unsigned int nDA = 0; //haplotype count of derived-ancestral
       for (unsigned int n = 0; n < sampleSegAlleles.size(); ++n){
         //count haplotypes
-        if (sampleSegAlleles.at(n).at(i) && sampleSegAlleles.at(n).at(j)) ++nAB;
+        if (sampleSegAlleles.at(n).at(i) && sampleSegAlleles.at(n).at(j)) ++nDD;
+        else if (sampleSegAlleles.at(n).at(i) && !sampleSegAlleles.at(n).at(j)) ++nDA;
       }
-      hfs_tmp.push_back((nAB*1.0)/sampleSize);
+      // check concistency between hf and maf
+      if ((unsigned int)(mafs.at(i) * sampleSize) != (nDD + nDA)) std::cerr << "inconsistency between haplotype frequency and allele frequency" << std::endl;
+      DDhfs_tmp.push_back((nDD*1.0)/sampleSize);
     }
-    hf_vec.push_back(hfs_tmp);
+    DDhf_vec.push_back(DDhfs_tmp);
   }
-  return hf_vec;
+  return DDhf_vec;
 }
 
-std::map<int, double> Samples::getLD(){
-  std::map<int, double> r2Table_out;//key is length, value is average r2
+//std::map<int, double> Samples::getLD(){
+void Samples::getLD(std::map<unsigned int, double>& r2Table, std::map<unsigned int, unsigned long>& r2Redundancy){
+  //std::map<int, double> r2Table_out;//key is length, value is average r2
   if (numOfSegSites > 1){
-    std::unordered_map<unsigned int, unsigned int> redundancy;
+    //std::unordered_map<unsigned int, unsigned int> redundancy;
     std::vector<double> mafs = getMAFs();
     std::vector<std::vector<double>> hfs = getHFs();
     for (unsigned int i = 0; i < (numOfSegSites - 1); ++i){//first locus
       for (unsigned int j = i + 1; j < numOfSegSites; ++j){//second locus
-        unsigned int interval = fabs(segSite_positions.at(j) - segSite_positions.at(i));
+        unsigned int interval = segSite_positions.at(j) - segSite_positions.at(i);
         double r2 = std::pow((hfs.at(i).at(j - (i + 1)) - mafs.at(i) * mafs.at(j)), 2.0)/(mafs.at(i) * (1 - mafs.at(i)) * mafs.at(j) * (1 - mafs.at(j)));
-        r2Table_out[interval] += r2;
-        ++redundancy[interval];
+        //r2Table_out[interval] += r2;
+        r2Table[interval] += r2;
+        //++redundancy[interval];
+        ++r2Redundancy[interval];
       }
     }
-    for (auto i_ptr = r2Table_out.begin(); i_ptr != r2Table_out.end(); ++i_ptr){
+    /*for (auto i_ptr = r2Table_out.begin(); i_ptr != r2Table_out.end(); ++i_ptr){
       r2Table_out.at(i_ptr->first) = r2Table_out.at(i_ptr->first)/(redundancy.at(i_ptr->first) * 1.0);
-    }
-  } else{//when 0 or 1 polymorphic site
+    }*/
+  } /*else{//when 0 or 1 polymorphic site
     r2Table_out[-1] = -1.0;
   }
-  return r2Table_out;
+  return r2Table_out;*/
 }
