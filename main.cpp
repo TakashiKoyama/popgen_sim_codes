@@ -42,15 +42,7 @@ int main(){
       outfile_summary << i/(2 * n) << "\t" << h << "\t" << s << "\t" << pi << std::endl;
       std::cout << "//\nsegsites: " << s << "\n";
       samples.printIndividualAlleles();
-      //std::map<int, double> r2Table_tmp = samples.getLD();
       samples.getLD(r2Table, r2Redundancy);
-      //sum up each sample R2 table
-      /*for (auto i_ptr = r2Table_tmp.begin(); i_ptr != r2Table_tmp.end(); ++i_ptr){
-        if(i_ptr->first != -1){
-          r2Table[i_ptr->first] += r2Table_tmp.at(i_ptr->first);
-          ++r2Redundancy[i_ptr->first];
-        }
-      }*/
     }
   }
   //out average R2

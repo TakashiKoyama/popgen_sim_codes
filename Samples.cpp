@@ -134,28 +134,16 @@ std::vector<std::vector<double>> Samples::getHFs(){
   return DDhf_vec;
 }
 
-//std::map<int, double> Samples::getLD(){
 void Samples::getLD(std::map<unsigned int, double>& r2Table, std::map<unsigned int, unsigned long>& r2Redundancy){
-  //std::map<int, double> r2Table_out;//key is length, value is average r2
   if (numOfSegSites > 1){
-    //std::unordered_map<unsigned int, unsigned int> redundancy;
     std::vector<double> mafs = getMAFs();
     std::vector<std::vector<double>> hfs = getHFs();
     for (unsigned int i = 0; i < (numOfSegSites - 1); ++i){//first locus
       for (unsigned int j = i + 1; j < numOfSegSites; ++j){//second locus
         unsigned int interval = segSite_positions.at(j) - segSite_positions.at(i);
         double r2 = std::pow((hfs.at(i).at(j - (i + 1)) - mafs.at(i) * mafs.at(j)), 2.0)/(mafs.at(i) * (1 - mafs.at(i)) * mafs.at(j) * (1 - mafs.at(j)));
-        //r2Table_out[interval] += r2;
         r2Table[interval] += r2;
-        //++redundancy[interval];
         ++r2Redundancy[interval];
       }
     }
-    /*for (auto i_ptr = r2Table_out.begin(); i_ptr != r2Table_out.end(); ++i_ptr){
-      r2Table_out.at(i_ptr->first) = r2Table_out.at(i_ptr->first)/(redundancy.at(i_ptr->first) * 1.0);
-    }*/
-  } /*else{//when 0 or 1 polymorphic site
-    r2Table_out[-1] = -1.0;
-  }
-  return r2Table_out;*/
-}
+  }}
